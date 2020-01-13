@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<style type='text/css'>
+        body{
+            background-color: rgb(255,255,255);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            margin:0px;
+            overflow:scroll;
+        }
+    .second {
+        background-color:rgb(255,255,0);
+    }
+    .first{
+        background-color:rgb(231,231,231);
+        margin-left:10px;
+        margin-right:10px;
+        margin-top:10px;
+        padding-top:10px;
+        flex-direction:row;
+        overflow:hidden;
+        display:flex;
+        flex-wrap:wrap;
+    }
+    .content{
+        width:28%;
+        height: 10px;
+        background-color:rgb(255,182,193);
+        margin-left:15px;
+        margin-bottom:10px;
+    }
+    .bottom{
+        bottom: 10px;
+        right:10px;
+        width:100px;
+        height:100px;
+        background-color: rgb(0,0,0);
+        position:fixed;
+    }
+	</style>
+    
+    <script>
+    window.onerror = function(err) {
+        log('window.onerror: ' + err)
+    }
+
+    function setupWebViewJavascriptBridge(callback) {
+        if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
+        if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
+        window.WVJBCallbacks = [callback];
+        var WVJBIframe = document.createElement('iframe');
+        WVJBIframe.style.display = 'none';
+        WVJBIframe.src = 'https://__bridge_loaded__';
+        document.documentElement.appendChild(WVJBIframe);
+        setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
+    }
+
+    setupWebViewJavascriptBridge(function(bridge) {
+        var uniqueId = 1
+        function log(message, data) {
+            var log = document.getElementById('log')
+            var el = document.createElement('div')
+            el.className = 'logLine'
+            el.innerHTML = uniqueId++ + '. ' + message + ':<br/>' + JSON.stringify(data)
+            if (log.children.length) { log.insertBefore(el, log.children[0]) }
+            else { log.appendChild(el) }
+        }
+
+        bridge.registerHandler('testJavascriptHandler', function(data, responseCallback) {
+            log('ObjC called testJavascriptHandler with', data)
+            var responseData = { 'Javascript Says':'Right back atcha!' }
+            log('JS responding with', responseData)
+            responseCallback(responseData)
+        })
+
+        document.body.appendChild(document.createElement('br'))
+
+        var callbackButton = document.getElementById('buttons').appendChild(document.createElement('button'))
+        callbackButton.innerHTML = 'Fire testObjcCallback'
+        callbackButton.onclick = function(e) {
+            e.preventDefault()
+            log('JS calling handler "testObjcCallback"')
+                                 bridge.callHandler('platformToCustomizeWebview'
+                                 , {
+                                     "title": "百度",
+                                     "url": "http://www.baidu.com",
+                                     "statusColor": "#ffffff",
+                                     "isOst": "0",
+                                     "ticket": "xx",
+                                     "channel": "xgz",
+                                     "style": 1
+                                 }, function(response) {
+                log('JS got response', response)
+            })
+        }
+    })
+    </script>
+</head>
+
+<body>
+    <div class="first second">
+        <div class="content"></div>
+        <div class="content"></div>
+        <div class="content"></div>
+        <div class="content"></div>
+    </div>
+    <div class="first second">
+        <div style="width:10px; height: 10px;background-color:rgb(255,182,193);margin-left:15px;"></div>
+    </div>
+    <div class="bottom"></div>
+</body>
+</html>
